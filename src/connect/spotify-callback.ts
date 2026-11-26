@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm";
 import { readCookie, redirect, serializeCookie } from "@/auth/cookies";
 import { encryptToken } from "@/auth/crypto";
 import { currentListener } from "@/auth/session";
@@ -8,7 +9,7 @@ import { PKCE_COOKIE, PKCE_COOKIE_PATH } from "./spotify-redirect";
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 const SPOTIFY_ME_URL = "https://api.spotify.com/v1/me";
 
-type ConnectOutcome = "expired" | "limited" | "denied" | "failed";
+type ConnectOutcome = "expired" | "limited" | "denied" | "taken" | "failed";
 type SpotifyTokens = {
   access_token: string;
   refresh_token: string;
@@ -67,6 +68,18 @@ export async function handleSpotifyCallback(
   const { account_id: externalAccountId } = await meResponse.json<{
     account_id: string;
   }>();
+
+  // One Spotify account can belong to only one Listener
+  const [owner] = await db
+    .select({ listenerId: connections.listenerId })
+    .from(connections)
+    .where(
+      and(
+        eq(connections.kind, "spotify"),
+        eq(connections.externalAccountId, externalAccountId),
+      ),
+    );
+  if (owner && owner.listenerId !== listener.id) return fail("taken");
 
   const connectionColumns = {
     externalAccountId,

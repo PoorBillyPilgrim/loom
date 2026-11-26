@@ -316,4 +316,51 @@ describe("Connect Spotify callback", () => {
       );
     });
   });
+
+  describe("a Spotify account connected to another Listener", () => {
+    async function connectAs(
+      sessionCookie: string,
+      accountId: string,
+      now = NOW,
+    ) {
+      network.resetHandlers();
+      spotifyRespondsWith(token, () =>
+        HttpResponse.json({ ...me, account_id: accountId }),
+      );
+      return completeConnect(sessionCookie, now);
+    }
+
+    it("is refused for a Listener without Spotify", async () => {
+      const alice = await signedInListener("alice", NOW);
+      const bob = await signedInListener("bob", NOW);
+      await connectAs(alice.sessionCookie, "alice-spotify");
+      const before = await getDb(env).select().from(connections);
+
+      const { response } = await connectAs(bob.sessionCookie, "alice-spotify");
+
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe("/explore?spotify=taken");
+      expect(responseCookies(response).get("loom_pkce")?.attributes).toEqual(
+        expect.arrayContaining(["Max-Age=0"]),
+      );
+      expect(await getDb(env).select().from(connections)).toEqual(before);
+    });
+
+    it("leaves both Connections unchanged when a connected Listener tries it", async () => {
+      const alice = await signedInListener("alice", NOW);
+      const bob = await signedInListener("bob", NOW);
+      await connectAs(alice.sessionCookie, "alice-spotify");
+      await connectAs(bob.sessionCookie, "bob-spotify");
+      const before = await getDb(env).select().from(connections);
+
+      const { response } = await connectAs(
+        bob.sessionCookie,
+        "alice-spotify",
+        LATER,
+      );
+
+      expect(response.headers.get("Location")).toBe("/explore?spotify=taken");
+      expect(await getDb(env).select().from(connections)).toEqual(before);
+    });
+  });
 });

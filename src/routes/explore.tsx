@@ -1,6 +1,15 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Alert, Container, Group, Stack, Text, Title } from "@mantine/core";
+import {
+  Alert,
+  Button,
+  Container,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { type } from "arktype";
+import { getSpotifyStatus } from "@/server/connections";
 import { getLoginState } from "@/server/session";
 import { LogoutButton } from "@/ui/LogoutButton";
 
@@ -11,6 +20,10 @@ const SPOTIFY_MESSAGES: Record<string, { color: string; text: string }> = {
     text: "Spotify access is limited to five Listeners.",
   },
   denied: { color: "gray", text: "Spotify connection was cancelled." },
+  taken: {
+    color: "yellow",
+    text: "That Spotify account is already connected to another Listener.",
+  },
   failed: { color: "red", text: "Connecting Spotify failed. Try again." },
 };
 
@@ -21,10 +34,12 @@ export const Route = createFileRoute("/explore")({
     const { loggedIn } = await getLoginState();
     if (!loggedIn) throw redirect({ to: "/" });
   },
+  loader: () => getSpotifyStatus(),
   component: Explore,
 });
 
 function Explore() {
+  const spotifyStatus = Route.useLoaderData();
   const { spotify } = Route.useSearch();
   const message = spotify ? SPOTIFY_MESSAGES[spotify] : undefined;
 
@@ -36,6 +51,13 @@ function Explore() {
           <LogoutButton />
         </Group>
         {message && <Alert color={message.color}>{message.text}</Alert>}
+        {spotifyStatus === "connected" ? (
+          <Text c="dimmed">Spotify connected.</Text>
+        ) : (
+          <Button component="a" href="/connect/spotify" w="fit-content">
+            Connect Spotify
+          </Button>
+        )}
         <Text c="dimmed">
           You're logged in. Seeds to explore from are coming next.
         </Text>
