@@ -11,3 +11,7 @@ Uses the five default triage labels: needs-triage, needs-info, ready-for-agent, 
 ### Domain docs
 
 Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Planning
+
+Tasks and tickets in this repo don't need to stay near ~200 changed lines (overrides the global rule). Size them by what makes one coherent, testable slice.
