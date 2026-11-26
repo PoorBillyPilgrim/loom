@@ -3,18 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { handleLogout } from '@/auth/logout'
 import { createSession, currentListener } from '@/auth/session'
 import { getDb } from '@/db/client'
-import { listeners, sessions } from '@/db/schema'
-import { LOCAL_ORIGIN, responseCookies } from '../helpers/auth'
+import { sessions } from '@/db/schema'
+import { LOCAL_ORIGIN, insertListener, responseCookies } from '../helpers/auth'
 
 const NOW = new Date('2026-11-25T12:00:00Z')
 const DAY_MS = 24 * 60 * 60 * 1000
-
-async function insertListener(id = 'listener-1') {
-  await getDb(env)
-    .insert(listeners)
-    .values({ id, spotifyAccountId: `account-${id}`, createdAt: NOW })
-  return id
-}
 
 function requestWithSession(cookieValue?: string, path = '/', method = 'GET') {
   return new Request(`${LOCAL_ORIGIN}${path}`, {

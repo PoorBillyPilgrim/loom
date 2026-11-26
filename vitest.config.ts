@@ -15,7 +15,7 @@ export default defineConfig(async () => {
           bindings: {
             SPOTIFY_CLIENT_ID: 'test-client-id',
             SPOTIFY_CLIENT_SECRET: 'test-client-secret',
-            SPOTIFY_REDIRECT_URI: 'http://127.0.0.1:8787/auth/callback',
+            SPOTIFY_REDIRECT_URI: 'http://127.0.0.1:8787/connect/spotify/callback',
             LASTFM_API_KEY: 'test-lastfm-key',
             TOKEN_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
             TEST_MIGRATIONS: migrations,

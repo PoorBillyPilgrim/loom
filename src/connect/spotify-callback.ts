@@ -1,24 +1,28 @@
+import { readCookie, redirect, serializeCookie } from '@/auth/cookies'
+import { encryptToken } from '@/auth/crypto'
+import { currentListener } from '@/auth/session'
 import { getDb } from '@/db/client'
-import { listeners } from '@/db/schema'
-import { readCookie, redirect, serializeCookie } from './cookies'
-import { encryptToken } from './crypto'
-import { PKCE_COOKIE, PKCE_COOKIE_PATH } from './login'
-import { createSession, sessionCookie } from './session'
+import { connections } from '@/db/schema'
+import { PKCE_COOKIE, PKCE_COOKIE_PATH } from './spotify-redirect'
 
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token'
 const SPOTIFY_ME_URL = 'https://api.spotify.com/v1/me'
 
-type LoginOutcome = 'expired' | 'not-invited' | 'denied' | 'failed'
+type ConnectOutcome = 'expired' | 'limited' | 'denied' | 'failed'
 type SpotifyTokens = { access_token: string; refresh_token: string; expires_in: number }
 
-export async function handleCallback(
+export async function handleSpotifyCallback(
   request: Request,
   env: Env,
   now: Date = new Date(),
 ): Promise<Response> {
   const url = new URL(request.url)
   const clearPkce = serializeCookie(request, PKCE_COOKIE, '', { path: PKCE_COOKIE_PATH, maxAge: 0 })
-  const fail = (outcome: LoginOutcome) => redirect(`/?login=${outcome}`, [clearPkce])
+  const fail = (outcome: ConnectOutcome) => redirect(`/explore?spotify=${outcome}`, [clearPkce])
+
+  const db = getDb(env)
+  const listener = await currentListener(request, db, now)
+  if (!listener) return redirect('/auth/login', [clearPkce])
 
   if (url.searchParams.get('error')) return fail('denied')
 
@@ -50,24 +54,31 @@ export async function handleCallback(
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   })
   // Development Mode apps answer 403 for anyone not on the dashboard allowlist
-  if (meResponse.status === 403) return fail('not-invited')
+  if (meResponse.status === 403) return fail('limited')
   if (!meResponse.ok) return fail('failed')
-  const { account_id: spotifyAccountId } = (await meResponse.json()) as { account_id: string }
+  const { account_id: externalAccountId } = (await meResponse.json()) as { account_id: string }
 
-  const tokenColumns = {
+  const connectionColumns = {
+    externalAccountId,
     accessTokenEnc: await encryptToken(tokens.access_token, env.TOKEN_ENCRYPTION_KEY),
     refreshTokenEnc: await encryptToken(tokens.refresh_token, env.TOKEN_ENCRYPTION_KEY),
     accessTokenExpiresAt: new Date(now.getTime() + tokens.expires_in * 1000),
-    // Each login is a fresh authorization, which restarts Spotify's 6-month refresh token clock
+    // Each authorization restarts Spotify's 6-month refresh token clock
     refreshTokenIssuedAt: now,
   }
-  const db = getDb(env)
-  const [listener] = await db
-    .insert(listeners)
-    .values({ id: crypto.randomUUID(), spotifyAccountId, createdAt: now, ...tokenColumns })
-    .onConflictDoUpdate({ target: listeners.spotifyAccountId, set: tokenColumns })
-    .returning({ id: listeners.id })
+  await db
+    .insert(connections)
+    .values({
+      id: crypto.randomUUID(),
+      listenerId: listener.id,
+      kind: 'spotify',
+      linkedAt: now,
+      ...connectionColumns,
+    })
+    .onConflictDoUpdate({
+      target: [connections.listenerId, connections.kind],
+      set: connectionColumns,
+    })
 
-  const session = await createSession(db, listener!.id, now)
-  return redirect('/explore', [sessionCookie(request, session), clearPkce])
+  return redirect('/explore', [clearPkce])
 }

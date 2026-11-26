@@ -1,5 +1,8 @@
 import { env } from 'cloudflare:workers'
-import { handleLogin } from '@/auth/login'
+import { createSession } from '@/auth/session'
+import { handleConnectSpotify } from '@/connect/spotify-redirect'
+import { getDb } from '@/db/client'
+import { listeners } from '@/db/schema'
 
 export const LOCAL_ORIGIN = 'http://127.0.0.1:8787'
 export const DEPLOYED_ORIGIN = 'https://loom.example.workers.dev'
@@ -20,21 +23,40 @@ export function responseCookies(response: Response) {
   return cookies
 }
 
-/** Runs the real login redirect, so the callback sees the same cookie and state Spotify would send back */
-export async function startLogin(origin = LOCAL_ORIGIN) {
-  const response = await handleLogin(new Request(`${origin}/auth/login`), env)
-  const state = new URL(response.headers.get('Location')!).searchParams.get('state')!
-  const pkce = responseCookies(response).get('loom_pkce')!.value
-  const verifier = pkce.split('.')[1]!
+export async function insertListener(id = 'listener-1', now = new Date()) {
+  await getDb(env)
+    .insert(listeners)
+    .values({ id, googleSub: `google-sub-${id}`, email: `${id}@example.com`, createdAt: now })
+  return id
+}
+
+/** A Listener with a live session, and the Cookie header that carries it */
+export async function signedInListener(id = 'listener-1', now = new Date()) {
+  await insertListener(id, now)
+  const session = await createSession(getDb(env), id, now)
+  return { id, sessionCookie: `loom_session=${session}` }
+}
+
+/** Runs the real Connect Spotify redirect, so the callback sees the same cookie and state Spotify would send back */
+export async function startSpotifyConnect(sessionCookie: string, origin = LOCAL_ORIGIN) {
+  const response = await handleConnectSpotify(
+    new Request(`${origin}/connect/spotify`, { headers: { Cookie: sessionCookie } }),
+    env,
+  )
+  const location = new URL(response.headers.get('Location') ?? 'http://missing.invalid')
+  const state = location.searchParams.get('state') ?? ''
+  const pkce = responseCookies(response).get('loom_pkce')?.value ?? ''
+  const verifier = pkce.split('.')[1] ?? ''
   return { state, pkceCookie: `loom_pkce=${pkce}`, verifier }
 }
 
-export function callbackRequest(
+export function spotifyCallbackRequest(
   params: Record<string, string>,
-  cookie?: string,
+  cookies: string[] = [],
   origin = LOCAL_ORIGIN,
 ) {
-  const url = new URL(`${origin}/auth/callback`)
+  const url = new URL(`${origin}/connect/spotify/callback`)
   url.search = new URLSearchParams(params).toString()
-  return new Request(url, { headers: cookie ? { Cookie: cookie } : {} })
+  const headers: Record<string, string> = cookies.length ? { Cookie: cookies.join('; ') } : {}
+  return new Request(url, { headers })
 }

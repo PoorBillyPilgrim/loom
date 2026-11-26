@@ -1,11 +1,11 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "39f65128-b769-421a-a3fd-7464924be799",
+  "id": "6b18c665-dcf2-4682-a074-6a4d82afe4e3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "listeners": {
-      "name": "listeners",
+    "connections": {
+      "name": "connections",
       "columns": {
         "id": {
           "name": "id",
@@ -14,8 +14,22 @@
           "notNull": true,
           "autoincrement": false
         },
-        "spotify_account_id": {
-          "name": "spotify_account_id",
+        "listener_id": {
+          "name": "listener_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "external_account_id": {
+          "name": "external_account_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -49,6 +63,92 @@
           "notNull": false,
           "autoincrement": false
         },
+        "linked_at": {
+          "name": "linked_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "connections_listener_kind_unique": {
+          "name": "connections_listener_kind_unique",
+          "columns": [
+            "listener_id",
+            "kind"
+          ],
+          "isUnique": true
+        },
+        "connections_kind_account_unique": {
+          "name": "connections_kind_account_unique",
+          "columns": [
+            "kind",
+            "external_account_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "connections_listener_id_listeners_id_fk": {
+          "name": "connections_listener_id_listeners_id_fk",
+          "tableFrom": "connections",
+          "tableTo": "listeners",
+          "columnsFrom": [
+            "listener_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "invites": {
+      "name": "invites",
+      "columns": {
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "listeners": {
+      "name": "listeners",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "google_sub": {
+          "name": "google_sub",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -58,10 +158,10 @@
         }
       },
       "indexes": {
-        "listeners_spotify_account_id_unique": {
-          "name": "listeners_spotify_account_id_unique",
+        "listeners_google_sub_unique": {
+          "name": "listeners_google_sub_unique",
           "columns": [
-            "spotify_account_id"
+            "google_sub"
           ],
           "isUnique": true
         }
