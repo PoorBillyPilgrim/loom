@@ -65,6 +65,7 @@ export async function handleSpotifyCallback(
   // Development Mode apps answer 403 for anyone not on the dashboard allowlist
   if (meResponse.status === 403) return fail("limited");
   if (!meResponse.ok) return fail("failed");
+  // Spotify recommends account_id over id for account linking
   const { account_id: externalAccountId } = await meResponse.json<{
     account_id: string;
   }>();
