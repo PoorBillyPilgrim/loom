@@ -1,6 +1,8 @@
+import { redirect, serializeCookie } from './cookies'
 import { createPkce, randomToken } from './pkce'
 
 export const PKCE_COOKIE = 'loom_pkce'
+export const PKCE_COOKIE_PATH = '/auth'
 
 const SPOTIFY_AUTHORIZE_URL = 'https://accounts.spotify.com/authorize'
 const SCOPES = [
@@ -26,18 +28,10 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
     code_challenge: challenge,
   }).toString()
 
-  const cookie = [
-    `${PKCE_COOKIE}=${state}.${verifier}`,
-    'HttpOnly',
-    'SameSite=Lax',
-    'Max-Age=600',
-    'Path=/auth',
-  ]
-  // Browsers drop Secure cookies on http://127.0.0.1 in some cases, so only set it once deployed
-  if (new URL(request.url).protocol === 'https:') cookie.push('Secure')
-
-  return new Response(null, {
-    status: 302,
-    headers: { Location: authorize.toString(), 'Set-Cookie': cookie.join('; ') },
-  })
+  return redirect(authorize.toString(), [
+    serializeCookie(request, PKCE_COOKIE, `${state}.${verifier}`, {
+      path: PKCE_COOKIE_PATH,
+      maxAge: 600,
+    }),
+  ])
 }

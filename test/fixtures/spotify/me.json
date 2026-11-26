@@ -1,0 +1,7 @@
+{
+  "account_id": "fixture-account-id",
+  "id": "fixture-user-id",
+  "display_name": "Fixture Listener",
+  "type": "user",
+  "uri": "spotify:user:fixture-user-id"
+}
