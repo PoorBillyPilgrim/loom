@@ -3,8 +3,13 @@ import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { decryptToken } from "@/auth/crypto";
 import { handleSpotifyCallback } from "@/connect/spotify-callback";
+import { spotifyStatus } from "@/connect/status";
 import { getDb } from "@/db/client";
 import { connections, sessions } from "@/db/schema";
+import {
+  SpotifyNeedsReconnect,
+  spotifyAccessToken,
+} from "@/spotify/access-token";
 import me from "../fixtures/spotify/me.json";
 import token from "../fixtures/spotify/token.json";
 import {
@@ -362,5 +367,36 @@ describe("Connect Spotify callback", () => {
       expect(response.headers.get("Location")).toBe("/explore?spotify=taken");
       expect(await getDb(env).select().from(connections)).toEqual(before);
     });
+  });
+
+  it("restores the same Connection when the Listener reconnects after invalid_grant", async () => {
+    const { id, sessionCookie } = await signedInListener("alice", NOW);
+    spotifyRespondsWith();
+    await completeConnect(sessionCookie);
+    const [connected] = await getDb(env).select().from(connections);
+
+    network.resetHandlers();
+    network.use(
+      http.post(TOKEN_URL, () =>
+        HttpResponse.json({ error: "invalid_grant" }, { status: 400 }),
+      ),
+    );
+    await expect(
+      spotifyAccessToken(getDb(env), env, id, LATER),
+    ).rejects.toBeInstanceOf(SpotifyNeedsReconnect);
+    expect(await spotifyStatus(getDb(env), id)).toBe("needs-reconnect");
+
+    network.resetHandlers();
+    spotifyRespondsWith({ ...token, access_token: "reconnected-access" });
+    await completeConnect(sessionCookie, LATER);
+
+    expect(await spotifyStatus(getDb(env), id)).toBe("connected");
+    const rows = await getDb(env).select().from(connections);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].id).toBe(connected.id);
+    expect(rows[0].refreshTokenIssuedAt).toEqual(LATER);
+    expect(
+      await decryptToken(rows[0].accessTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
+    ).toBe("reconnected-access");
   });
 });

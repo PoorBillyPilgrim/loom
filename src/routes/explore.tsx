@@ -51,9 +51,23 @@ function Explore() {
           <LogoutButton />
         </Group>
         {message && <Alert color={message.color}>{message.text}</Alert>}
-        {spotifyStatus === "connected" ? (
+        {spotifyStatus === "connected" && (
           <Text c="dimmed">Spotify connected.</Text>
-        ) : (
+        )}
+        {spotifyStatus === "needs-reconnect" && (
+          <Alert color="yellow">
+            <Stack gap="xs" align="flex-start">
+              <Text size="sm">
+                Spotify's access to your account ran out after 6 months.
+                Reconnect to keep using it.
+              </Text>
+              <Button component="a" href="/connect/spotify">
+                Reconnect Spotify
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+        {spotifyStatus === "none" && (
           <Button component="a" href="/connect/spotify" w="fit-content">
             Connect Spotify
           </Button>

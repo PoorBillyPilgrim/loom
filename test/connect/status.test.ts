@@ -2,26 +2,10 @@ import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { spotifyStatus } from "@/connect/status";
 import { getDb } from "@/db/client";
-import { connections } from "@/db/schema";
 import { insertListener } from "../helpers/auth";
+import { insertSpotifyConnection } from "../helpers/spotify";
 
 const NOW = new Date("2026-11-25T12:00:00Z");
-
-async function insertSpotifyConnection(listenerId: string) {
-  await getDb(env)
-    .insert(connections)
-    .values({
-      id: `connection-${listenerId}`,
-      listenerId,
-      kind: "spotify",
-      externalAccountId: `spotify-${listenerId}`,
-      accessTokenEnc: "encrypted-access",
-      refreshTokenEnc: "encrypted-refresh",
-      accessTokenExpiresAt: new Date(NOW.getTime() + 3600 * 1000),
-      refreshTokenIssuedAt: NOW,
-      linkedAt: NOW,
-    });
-}
 
 describe("Spotify status", () => {
   it("is none before the Listener connects Spotify", async () => {
@@ -37,5 +21,16 @@ describe("Spotify status", () => {
 
     expect(await spotifyStatus(getDb(env), "alice")).toBe("connected");
     expect(await spotifyStatus(getDb(env), "bob")).toBe("none");
+  });
+
+  it("needs a reconnect once Spotify's authorization was dropped", async () => {
+    await insertListener("alice", NOW);
+    await insertSpotifyConnection("alice", {
+      accessToken: null,
+      refreshToken: null,
+      accessTokenExpiresAt: null,
+    });
+
+    expect(await spotifyStatus(getDb(env), "alice")).toBe("needs-reconnect");
   });
 });
