@@ -4,26 +4,26 @@ import { type } from 'arktype'
 import { getLoginState } from '@/server/session'
 import { LogoutButton } from '@/ui/LogoutButton'
 
-const LOGIN_MESSAGES: Record<string, { color: string; text: string }> = {
-  expired: { color: 'yellow', text: 'That login link expired. Try again.' },
+const SIGN_IN_MESSAGES: Record<string, { color: string; text: string }> = {
+  expired: { color: 'yellow', text: 'That sign-in link expired. Try again.' },
   'not-invited': {
     color: 'yellow',
-    text: 'Loom is invite-only. Ask Tyler to add your Spotify account.',
+    text: 'Loom is invite-only. Ask Tyler to invite your Google email.',
   },
-  denied: { color: 'gray', text: 'Spotify login was cancelled.' },
-  failed: { color: 'red', text: 'Spotify login failed. Try again.' },
+  denied: { color: 'gray', text: 'Google sign-in was cancelled.' },
+  failed: { color: 'red', text: 'Google sign-in failed. Try again.' },
 }
 
 export const Route = createFileRoute('/')({
-  validateSearch: type({ 'login?': 'string' }),
+  validateSearch: type({ 'signin?': 'string' }),
   loader: () => getLoginState(),
   component: Home,
 })
 
 function Home() {
   const { loggedIn } = Route.useLoaderData()
-  const { login } = Route.useSearch()
-  const message = login ? LOGIN_MESSAGES[login] : undefined
+  const { signin } = Route.useSearch()
+  const message = signin ? SIGN_IN_MESSAGES[signin] : undefined
 
   return (
     <Container size="sm" py="xl">
@@ -40,7 +40,7 @@ function Home() {
           </Group>
         ) : (
           <Button component="a" href="/auth/login" w="fit-content">
-            Log in with Spotify
+            Sign in with Google
           </Button>
         )}
       </Stack>

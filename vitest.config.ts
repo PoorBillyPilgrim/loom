@@ -13,6 +13,9 @@ export default defineConfig(async () => {
         wrangler: { configPath: './wrangler.jsonc' },
         miniflare: {
           bindings: {
+            GOOGLE_CLIENT_ID: 'test-google-client-id',
+            GOOGLE_CLIENT_SECRET: 'test-google-client-secret',
+            GOOGLE_REDIRECT_URI: 'http://127.0.0.1:8787/auth/callback',
             SPOTIFY_CLIENT_ID: 'test-client-id',
             SPOTIFY_CLIENT_SECRET: 'test-client-secret',
             SPOTIFY_REDIRECT_URI: 'http://127.0.0.1:8787/connect/spotify/callback',

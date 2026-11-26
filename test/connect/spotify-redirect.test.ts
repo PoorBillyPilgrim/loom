@@ -1,7 +1,13 @@
 import { env } from 'cloudflare:workers'
 import { describe, expect, it } from 'vitest'
 import { handleConnectSpotify } from '@/connect/spotify-redirect'
-import { DEPLOYED_ORIGIN, LOCAL_ORIGIN, responseCookies, signedInListener } from '../helpers/auth'
+import {
+  DEPLOYED_ORIGIN,
+  LOCAL_ORIGIN,
+  responseCookies,
+  s256,
+  signedInListener,
+} from '../helpers/auth'
 
 async function connect({ origin = LOCAL_ORIGIN, sessionCookie = '' } = {}) {
   const response = await handleConnectSpotify(
@@ -16,14 +22,6 @@ async function connect({ origin = LOCAL_ORIGIN, sessionCookie = '' } = {}) {
   const [cookieName, cookieValue = ''] = pair.split('=')
   const [cookieState, cookieVerifier] = cookieValue.split('.')
   return { response, location, setCookie, cookieName, cookieState, cookieVerifier, attributes }
-}
-
-async function s256(verifier: string) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
 }
 
 describe('Connect Spotify', () => {
