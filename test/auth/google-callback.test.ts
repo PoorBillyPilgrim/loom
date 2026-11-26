@@ -66,10 +66,10 @@ describe("Google sign-in callback", () => {
     const { verifier } = await completeSignIn();
 
     expect(tokenRequests).toHaveLength(1);
-    expect(tokenRequests[0]!.contentType).toBe(
+    expect(tokenRequests[0].contentType).toBe(
       "application/x-www-form-urlencoded",
     );
-    expect(Object.fromEntries(tokenRequests[0]!.body)).toEqual({
+    expect(Object.fromEntries(tokenRequests[0].body)).toEqual({
       grant_type: "authorization_code",
       code: "google-code",
       redirect_uri: "http://127.0.0.1:8787/auth/callback",
@@ -164,7 +164,7 @@ describe("Google sign-in callback", () => {
     expect(await getDb(env).select().from(sessions)).toEqual([
       {
         idHash: await sha256Hex(session!.value),
-        listenerId: listener!.id,
+        listenerId: listener.id,
         expiresAt: new Date(NOW.getTime() + 30 * DAY_MS),
         createdAt: NOW,
       },

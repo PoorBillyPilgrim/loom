@@ -65,10 +65,10 @@ describe("Connect Spotify callback", () => {
 
     expect(tokenRequests).toHaveLength(1);
     const [request] = tokenRequests;
-    expect(request!.authorization).toBe(
+    expect(request.authorization).toBe(
       `Basic ${btoa("test-client-id:test-client-secret")}`,
     );
-    expect(Object.fromEntries(request!.body)).toEqual({
+    expect(Object.fromEntries(request.body)).toEqual({
       grant_type: "authorization_code",
       code: "spotify-code",
       redirect_uri: "http://127.0.0.1:8787/connect/spotify/callback",
@@ -150,18 +150,18 @@ describe("Connect Spotify callback", () => {
     const rows = await getDb(env).select().from(connections);
     expect(rows).toHaveLength(1);
     const row = rows[0];
-    expect(row!.accessTokenEnc).not.toContain("fixture-access-token");
-    expect(row!.refreshTokenEnc).not.toContain("fixture-refresh-token");
+    expect(row.accessTokenEnc).not.toContain("fixture-access-token");
+    expect(row.refreshTokenEnc).not.toContain("fixture-refresh-token");
     expect(
-      await decryptToken(row!.accessTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
+      await decryptToken(row.accessTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
     ).toBe("fixture-access-token");
     expect(
-      await decryptToken(row!.refreshTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
+      await decryptToken(row.refreshTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
     ).toBe("fixture-refresh-token");
-    expect(row!.accessTokenExpiresAt).toEqual(
+    expect(row.accessTokenExpiresAt).toEqual(
       new Date(NOW.getTime() + 3600 * 1000),
     );
-    expect(row!.refreshTokenIssuedAt).toEqual(NOW);
+    expect(row.refreshTokenIssuedAt).toEqual(NOW);
   });
 
   it("updates the same Connection when the Listener reconnects", async () => {
@@ -176,12 +176,12 @@ describe("Connect Spotify callback", () => {
 
     const rows = await getDb(env).select().from(connections);
     expect(rows).toHaveLength(1);
-    expect(rows[0]!.id).toBe(first!.id);
-    expect(rows[0]!.linkedAt).toEqual(NOW);
+    expect(rows[0].id).toBe(first.id);
+    expect(rows[0].linkedAt).toEqual(NOW);
     // Each authorization restarts Spotify's 6-month refresh token clock
-    expect(rows[0]!.refreshTokenIssuedAt).toEqual(LATER);
+    expect(rows[0].refreshTokenIssuedAt).toEqual(LATER);
     expect(
-      await decryptToken(rows[0]!.accessTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
+      await decryptToken(rows[0].accessTokenEnc!, env.TOKEN_ENCRYPTION_KEY),
     ).toBe("second-access-token");
   });
 

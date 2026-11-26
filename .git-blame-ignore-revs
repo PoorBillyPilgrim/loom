@@ -1,0 +1,5 @@
+# Formatting-only commits, skipped by git blame and GitHub
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# #24 : Reformat with Prettier
+cdb9f8d46da50d60ef9437af8fddf1da8abe809f

@@ -20,8 +20,10 @@ has_eslint() { [ -x "$bin/eslint" ] && [ -f eslint.config.js ]; }
 
 case "$file" in
   *.ts | *.tsx)
-    if has_eslint; then
-      node .claude/scripts/check-mantine-a11y.mjs "$file"
+    if has_eslint && [ -n "$(node .claude/scripts/check-mantine-a11y.mjs "$file")" ]; then
+      # The script appends to the Mantine mapping without formatting it
+      "$bin/prettier" --write --log-level warn eslint.config.js >/dev/null
+      echo "Added a Mantine component to the jsx-a11y mapping in eslint.config.js"
     fi
     ;;
 esac

@@ -46,9 +46,9 @@ export async function handleCallback(
   // Google answers 400 when the code was already used or has expired
   if (tokenResponse.status === 400) return fail("expired");
   if (!tokenResponse.ok) return fail("failed");
-  const { id_token: idToken } = (await tokenResponse.json()) as {
+  const { id_token: idToken } = await tokenResponse.json<{
     id_token: string;
-  };
+  }>();
 
   const identity = await verifyGoogleIdToken(idToken, env, now);
   if (!identity) return fail("failed");
@@ -73,6 +73,6 @@ export async function handleCallback(
     })
     .returning({ id: listeners.id });
 
-  const session = await createSession(db, listener!.id, now);
+  const session = await createSession(db, listener.id, now);
   return redirect("/explore", [sessionCookie(request, session), clearPkce]);
 }

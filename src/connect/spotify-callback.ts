@@ -56,7 +56,7 @@ export async function handleSpotifyCallback(
   // Spotify answers 400 when the code was already used or has expired
   if (tokenResponse.status === 400) return fail("expired");
   if (!tokenResponse.ok) return fail("failed");
-  const tokens = (await tokenResponse.json()) as SpotifyTokens;
+  const tokens = await tokenResponse.json<SpotifyTokens>();
 
   const meResponse = await fetch(SPOTIFY_ME_URL, {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
@@ -64,9 +64,9 @@ export async function handleSpotifyCallback(
   // Development Mode apps answer 403 for anyone not on the dashboard allowlist
   if (meResponse.status === 403) return fail("limited");
   if (!meResponse.ok) return fail("failed");
-  const { account_id: externalAccountId } = (await meResponse.json()) as {
+  const { account_id: externalAccountId } = await meResponse.json<{
     account_id: string;
-  };
+  }>();
 
   const connectionColumns = {
     externalAccountId,

@@ -18,7 +18,7 @@ export async function verifyGoogleIdToken(
 ): Promise<GoogleIdentity | null> {
   const certsResponse = await fetch(GOOGLE_CERTS_URL);
   if (!certsResponse.ok) return null;
-  const keys = createLocalJWKSet((await certsResponse.json()) as JSONWebKeySet);
+  const keys = createLocalJWKSet(await certsResponse.json<JSONWebKeySet>());
 
   try {
     const { payload } = await jwtVerify(idToken, keys, {

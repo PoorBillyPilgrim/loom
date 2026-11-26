@@ -61,7 +61,7 @@ describe("Sign in with Google", () => {
     expect(cookieState).toBe(location.searchParams.get("state"));
     // RFC 7636: verifier is 43-128 unreserved characters
     expect(cookieVerifier).toMatch(/^[A-Za-z0-9._~-]{43,128}$/);
-    expect(await s256(cookieVerifier!)).toBe(
+    expect(await s256(cookieVerifier)).toBe(
       location.searchParams.get("code_challenge"),
     );
   });
