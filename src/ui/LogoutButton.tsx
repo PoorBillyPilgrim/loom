@@ -1,4 +1,4 @@
-import { Button } from '@mantine/core'
+import { Button } from "@mantine/core";
 
 export function LogoutButton() {
   return (
@@ -7,5 +7,5 @@ export function LogoutButton() {
         Log out
       </Button>
     </form>
-  )
+  );
 }
