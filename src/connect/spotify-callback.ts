@@ -1,10 +1,11 @@
 import { and, eq } from "drizzle-orm";
-import { readCookie, redirect, serializeCookie } from "@/auth/cookies";
+import { clearPkceCookie, readAuthorizationCode } from "@/auth/authorize";
+import { redirect } from "@/auth/cookies";
 import { encryptToken } from "@/auth/crypto";
 import { currentListener } from "@/auth/session";
 import { getDb } from "@/db/client";
 import { connections } from "@/db/schema";
-import { PKCE_COOKIE, PKCE_COOKIE_PATH } from "./spotify-redirect";
+import { PKCE_COOKIE_PATH } from "./spotify-redirect";
 
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 const SPOTIFY_ME_URL = "https://api.spotify.com/v1/me";
@@ -21,11 +22,7 @@ export async function handleSpotifyCallback(
   env: Env,
   now: Date = new Date(),
 ): Promise<Response> {
-  const url = new URL(request.url);
-  const clearPkce = serializeCookie(request, PKCE_COOKIE, "", {
-    path: PKCE_COOKIE_PATH,
-    maxAge: 0,
-  });
+  const clearPkce = clearPkceCookie(request, PKCE_COOKIE_PATH);
   const fail = (outcome: ConnectOutcome) =>
     redirect(`/explore?spotify=${outcome}`, [clearPkce]);
 
@@ -33,13 +30,11 @@ export async function handleSpotifyCallback(
   const listener = await currentListener(request, db, now);
   if (!listener) return redirect("/auth/login", [clearPkce]);
 
-  if (url.searchParams.get("error")) return fail("denied");
+  if (new URL(request.url).searchParams.get("error")) return fail("denied");
 
-  const [state, verifier] = (readCookie(request, PKCE_COOKIE) ?? "").split(".");
-  const code = url.searchParams.get("code");
-  if (!state || !verifier || !code || url.searchParams.get("state") !== state) {
-    return fail("expired");
-  }
+  const authorization = readAuthorizationCode(request);
+  if (!authorization) return fail("expired");
+  const { code, verifier } = authorization;
 
   const tokenResponse = await fetch(SPOTIFY_TOKEN_URL, {
     method: "POST",

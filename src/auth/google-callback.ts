@@ -1,9 +1,10 @@
 import { getDb } from "@/db/client";
 import { listeners } from "@/db/schema";
-import { readCookie, redirect, serializeCookie } from "./cookies";
+import { clearPkceCookie, readAuthorizationCode } from "./authorize";
+import { redirect } from "./cookies";
 import { verifyGoogleIdToken } from "./google-id-token";
 import { isInvited } from "./invites";
-import { PKCE_COOKIE, PKCE_COOKIE_PATH } from "./google-redirect";
+import { PKCE_COOKIE_PATH } from "./google-redirect";
 import { createSession, sessionCookie } from "./session";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -15,21 +16,15 @@ export async function handleGoogleCallback(
   env: Env,
   now: Date = new Date(),
 ): Promise<Response> {
-  const url = new URL(request.url);
-  const clearPkce = serializeCookie(request, PKCE_COOKIE, "", {
-    path: PKCE_COOKIE_PATH,
-    maxAge: 0,
-  });
+  const clearPkce = clearPkceCookie(request, PKCE_COOKIE_PATH);
   const fail = (outcome: SignInOutcome) =>
     redirect(`/?signin=${outcome}`, [clearPkce]);
 
-  if (url.searchParams.get("error")) return fail("denied");
+  if (new URL(request.url).searchParams.get("error")) return fail("denied");
 
-  const [state, verifier] = (readCookie(request, PKCE_COOKIE) ?? "").split(".");
-  const code = url.searchParams.get("code");
-  if (!state || !verifier || !code || url.searchParams.get("state") !== state) {
-    return fail("expired");
-  }
+  const authorization = readAuthorizationCode(request);
+  if (!authorization) return fail("expired");
+  const { code, verifier } = authorization;
 
   const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
