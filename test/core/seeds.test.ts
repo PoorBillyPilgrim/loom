@@ -50,6 +50,30 @@ function refreshRespondsWith(response: () => Response) {
 
 const validUntil = new Date(NOW.getTime() + 30 * MINUTE_MS);
 
+// From top-artists.json, recorded from Tyler's account
+const TOP_ARTIST_NAMES = [
+  "Kings of Leon",
+  "The Tallest Man On Earth",
+  "Grizzly Bear",
+  "Radiohead",
+  "Bon Iver",
+  "Hudson Freeman",
+  "Death Cab for Cutie",
+  "Brighter Days Family",
+  "Fleet Foxes",
+  "Resavoir",
+  "JW Francis",
+  "The Belair Lip Bombs",
+  "Pinegrove",
+  "Geese",
+  "Built To Spill",
+  "alt-J",
+  "Concrete Vehicles",
+  "System Of A Down",
+  "Father John Misty",
+  "The Shins",
+];
+
 beforeEach(() => {
   spotifyRequests = [];
   spotifyAnswersWithFixtures();
@@ -67,23 +91,13 @@ describe("Seed candidates", () => {
   it("are the Listener's short-term top artists, in Spotify's order", async () => {
     const seeds = await seedCandidates(context());
 
-    expect(seeds).toEqual([
-      {
-        spotifyId: "fixture-big-thief",
-        name: "Big Thief",
-        imageUrl: "https://i.scdn.co/image/big-thief-160",
-      },
-      {
-        spotifyId: "fixture-adrianne-lenker",
-        name: "Adrianne Lenker",
-        imageUrl: "https://i.scdn.co/image/adrianne-lenker-320",
-      },
-      {
-        spotifyId: "fixture-no-images",
-        name: "Basement Tapes Band",
-        imageUrl: null,
-      },
-    ]);
+    expect(seeds.map(seed => seed.name)).toEqual(TOP_ARTIST_NAMES);
+    expect(seeds[0]).toEqual({
+      spotifyId: "2qk9voo8llSGYcZ6xrBzKx",
+      name: "Kings of Leon",
+      imageUrl:
+        "https://i.scdn.co/image/ab6761610000f1784e0be890b66350e999ffb4a1",
+    });
     expect(spotifyRequests).toHaveLength(1);
     expect(spotifyRequests[0].url.pathname).toBe("/v1/me/top/artists");
     expect(spotifyRequests[0].url.searchParams.get("time_range")).toBe(
@@ -96,11 +110,7 @@ describe("Seed candidates", () => {
     async query => {
       const seeds = await seedCandidates(context(), query);
 
-      expect(seeds.map(seed => seed.name)).toEqual([
-        "Big Thief",
-        "Adrianne Lenker",
-        "Basement Tapes Band",
-      ]);
+      expect(seeds.map(seed => seed.name)).toEqual(TOP_ARTIST_NAMES);
       expect(spotifyRequests.map(r => r.url.pathname)).toEqual([
         "/v1/me/top/artists",
       ]);
@@ -110,18 +120,29 @@ describe("Seed candidates", () => {
   it("search Spotify for artists, trimmed and limited to 10", async () => {
     const seeds = await seedCandidates(context(), "  big thief ");
 
-    expect(seeds).toEqual([
-      {
-        spotifyId: "fixture-big-thief",
-        name: "Big Thief",
-        imageUrl: "https://i.scdn.co/image/big-thief-160",
-      },
-      {
-        spotifyId: "fixture-big-thief-tribute",
-        name: "Big Thief Tribute Band",
-        imageUrl: "https://i.scdn.co/image/tribute-300",
-      },
+    expect(seeds.map(seed => seed.name)).toEqual([
+      "Big Thief",
+      "Adrianne Lenker",
+      "Buck Meek",
+      "Geese",
+      "Waxahatchee",
+      "MJ Lenderman",
+      "Big thief naruto",
+      "Big Chief",
+      "Big Chief Joseph Boudreaux Jr.",
+      "Donald Harrison",
     ]);
+    expect(seeds[0]).toEqual({
+      spotifyId: "5QdyldG4Fl4TPiOIeMNpBZ",
+      name: "Big Thief",
+      imageUrl:
+        "https://i.scdn.co/image/ab6761610000f178b2be573b9d9ca2bf7f113d92",
+    });
+    // Spotify's smallest image is 64 px for some artists, and missing for others
+    expect(seeds[7].imageUrl).toBe(
+      "https://i.scdn.co/image/ab67616d000048512cce38b10dac1e2cdfc77452",
+    );
+    expect(seeds[8].imageUrl).toBeNull();
     expect(spotifyRequests).toHaveLength(1);
     const { pathname, searchParams } = spotifyRequests[0].url;
     expect(pathname).toBe("/v1/search");
@@ -188,7 +209,7 @@ describe("Seed candidates without a working Spotify Connection", () => {
 
     const seeds = await seedCandidates(context());
 
-    expect(seeds).toHaveLength(3);
+    expect(seeds).toHaveLength(20);
     expect(spotifyRequests.map(r => r.authorization)).toEqual([
       "Bearer renewed-access",
     ]);
