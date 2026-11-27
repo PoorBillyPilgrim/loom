@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "cloudflare:workers";
-import { handleLogin } from "@/auth/login";
+import { handleGoogleSignIn } from "@/auth/google-redirect";
 
 export const Route = createFileRoute("/auth/login")({
   server: {
     handlers: {
-      GET: ({ request }) => handleLogin(request, env),
+      GET: ({ request }) => handleGoogleSignIn(request, env),
     },
   },
 });

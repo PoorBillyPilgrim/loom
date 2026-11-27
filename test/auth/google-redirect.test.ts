@@ -1,10 +1,13 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
-import { handleLogin } from "@/auth/login";
+import { handleGoogleSignIn } from "@/auth/google-redirect";
 import { DEPLOYED_ORIGIN, LOCAL_ORIGIN, s256 } from "../helpers/auth";
 
 async function signIn(origin = LOCAL_ORIGIN) {
-  const response = await handleLogin(new Request(`${origin}/auth/login`), env);
+  const response = await handleGoogleSignIn(
+    new Request(`${origin}/auth/login`),
+    env,
+  );
   const location = new URL(
     response.headers.get("Location") ?? "http://missing.invalid",
   );

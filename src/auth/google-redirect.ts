@@ -8,7 +8,7 @@ const GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 // Non-sensitive scopes, so Google needs no app verification
 const SCOPES = ["openid", "email", "profile"];
 
-export async function handleLogin(
+export async function handleGoogleSignIn(
   request: Request,
   env: Env,
 ): Promise<Response> {

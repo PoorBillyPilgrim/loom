@@ -2,7 +2,7 @@ import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
-import { handleCallback } from "@/auth/callback";
+import { handleGoogleCallback } from "@/auth/google-callback";
 import { getDb } from "@/db/client";
 import { invites, listeners, sessions } from "@/db/schema";
 import {
@@ -47,7 +47,7 @@ async function completeSignIn({
 }: SignInOptions = {}) {
   googleRespondsWith(await signIdToken(claims, key), tokenRequests);
   const { state, pkceCookie, verifier } = await startSignIn(origin);
-  const response = await handleCallback(
+  const response = await handleGoogleCallback(
     signInCallbackRequest({ code: "google-code", state }, [pkceCookie], origin),
     env,
     now,
@@ -226,7 +226,7 @@ describe("Google sign-in callback", () => {
       googleRespondsWith(await signIdToken(idTokenClaims(NOW)), tokenRequests);
       const { pkceCookie } = await startSignIn();
 
-      const response = await handleCallback(
+      const response = await handleGoogleCallback(
         signInCallbackRequest({ code: "google-code", state: "forged-state" }, [
           pkceCookie,
         ]),
@@ -243,7 +243,7 @@ describe("Google sign-in callback", () => {
       googleRespondsWith(await signIdToken(idTokenClaims(NOW)), tokenRequests);
       const { state } = await startSignIn();
 
-      const response = await handleCallback(
+      const response = await handleGoogleCallback(
         signInCallbackRequest({ code: "google-code", state }),
         env,
         NOW,
@@ -260,7 +260,7 @@ describe("Google sign-in callback", () => {
       );
       const { state, pkceCookie } = await startSignIn();
 
-      const response = await handleCallback(
+      const response = await handleGoogleCallback(
         signInCallbackRequest({ code: "used-code", state }, [pkceCookie]),
         env,
         NOW,
@@ -274,7 +274,7 @@ describe("Google sign-in callback", () => {
       googleRespondsWith(await signIdToken(idTokenClaims(NOW)), tokenRequests);
       const { state, pkceCookie } = await startSignIn();
 
-      const response = await handleCallback(
+      const response = await handleGoogleCallback(
         signInCallbackRequest({ error: "access_denied", state }, [pkceCookie]),
         env,
         NOW,
@@ -369,7 +369,7 @@ describe("Google sign-in callback", () => {
       );
       const { state, pkceCookie } = await startSignIn();
 
-      const response = await handleCallback(
+      const response = await handleGoogleCallback(
         signInCallbackRequest({ code: "google-code", state }, [pkceCookie]),
         env,
         NOW,

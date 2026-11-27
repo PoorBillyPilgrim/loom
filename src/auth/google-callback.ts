@@ -3,14 +3,14 @@ import { listeners } from "@/db/schema";
 import { readCookie, redirect, serializeCookie } from "./cookies";
 import { verifyGoogleIdToken } from "./google-id-token";
 import { isInvited } from "./invites";
-import { PKCE_COOKIE, PKCE_COOKIE_PATH } from "./login";
+import { PKCE_COOKIE, PKCE_COOKIE_PATH } from "./google-redirect";
 import { createSession, sessionCookie } from "./session";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
 type SignInOutcome = "expired" | "not-invited" | "denied" | "failed";
 
-export async function handleCallback(
+export async function handleGoogleCallback(
   request: Request,
   env: Env,
   now: Date = new Date(),

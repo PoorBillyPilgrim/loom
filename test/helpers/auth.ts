@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { handleLogin } from "@/auth/login";
+import { handleGoogleSignIn } from "@/auth/google-redirect";
 import { createSession } from "@/auth/session";
 import { handleConnectSpotify } from "@/connect/spotify-redirect";
 import { getDb } from "@/db/client";
@@ -37,7 +37,10 @@ export async function invite(email: string) {
 
 /** Runs the real sign-in redirect, so the callback sees the same cookie and state Google would send back */
 export async function startSignIn(origin = LOCAL_ORIGIN) {
-  const response = await handleLogin(new Request(`${origin}/auth/login`), env);
+  const response = await handleGoogleSignIn(
+    new Request(`${origin}/auth/login`),
+    env,
+  );
   const location = new URL(
     response.headers.get("Location") ?? "http://missing.invalid",
   );
