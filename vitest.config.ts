@@ -12,6 +12,9 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         main: "./test/worker.ts",
+        // Tests reset and migrate D1, so they must never reach the real database,
+        // even if a binding in wrangler.jsonc is marked remote
+        remoteBindings: false,
         wrangler: { configPath: "./wrangler.jsonc" },
         miniflare: {
           bindings: {
