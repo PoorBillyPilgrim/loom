@@ -1,0 +1,79 @@
+{
+  "href": "https://api.spotify.com/v1/me/top/artists?time_range=short_term&offset=0&limit=20",
+  "limit": 20,
+  "next": null,
+  "offset": 0,
+  "previous": null,
+  "total": 3,
+  "items": [
+    {
+      "external_urls": {
+        "spotify": "https://open.spotify.com/artist/fixture-big-thief"
+      },
+      "followers": { "href": null, "total": 1000000 },
+      "genres": ["indie folk"],
+      "href": "https://api.spotify.com/v1/artists/fixture-big-thief",
+      "id": "fixture-big-thief",
+      "images": [
+        {
+          "url": "https://i.scdn.co/image/big-thief-640",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://i.scdn.co/image/big-thief-320",
+          "height": 320,
+          "width": 320
+        },
+        {
+          "url": "https://i.scdn.co/image/big-thief-160",
+          "height": 160,
+          "width": 160
+        }
+      ],
+      "name": "Big Thief",
+      "popularity": 60,
+      "type": "artist",
+      "uri": "spotify:artist:fixture-big-thief"
+    },
+    {
+      "external_urls": {
+        "spotify": "https://open.spotify.com/artist/fixture-adrianne-lenker"
+      },
+      "followers": { "href": null, "total": 500000 },
+      "genres": ["indie folk"],
+      "href": "https://api.spotify.com/v1/artists/fixture-adrianne-lenker",
+      "id": "fixture-adrianne-lenker",
+      "images": [
+        {
+          "url": "https://i.scdn.co/image/adrianne-lenker-640",
+          "height": 640,
+          "width": 640
+        },
+        {
+          "url": "https://i.scdn.co/image/adrianne-lenker-320",
+          "height": 320,
+          "width": 320
+        }
+      ],
+      "name": "Adrianne Lenker",
+      "popularity": 55,
+      "type": "artist",
+      "uri": "spotify:artist:fixture-adrianne-lenker"
+    },
+    {
+      "external_urls": {
+        "spotify": "https://open.spotify.com/artist/fixture-no-images"
+      },
+      "followers": { "href": null, "total": 12 },
+      "genres": [],
+      "href": "https://api.spotify.com/v1/artists/fixture-no-images",
+      "id": "fixture-no-images",
+      "images": [],
+      "name": "Basement Tapes Band",
+      "popularity": 1,
+      "type": "artist",
+      "uri": "spotify:artist:fixture-no-images"
+    }
+  ]
+}
