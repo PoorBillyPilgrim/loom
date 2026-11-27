@@ -8,7 +8,16 @@ export default defineConfig(async () => {
   );
 
   return {
-    resolve: { tsconfigPaths: true },
+    resolve: {
+      tsconfigPaths: true,
+      // Only TanStack Start's Vite plugin can load the real module, and tests don't run it
+      alias: {
+        "@tanstack/react-start/server": path.join(
+          import.meta.dirname,
+          "test/stubs/react-start-server.ts",
+        ),
+      },
+    },
     plugins: [
       cloudflareTest({
         main: "./test/worker.ts",

@@ -3,7 +3,6 @@ import { eq } from "drizzle-orm";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { decryptToken } from "@/auth/crypto";
-import { spotifyStatus } from "@/connect/status";
 import { getDb } from "@/db/client";
 import { connections } from "@/db/schema";
 import {
@@ -148,7 +147,6 @@ describe("Spotify access token", () => {
       refreshTokenEnc: null,
       accessTokenExpiresAt: null,
     });
-    expect(await spotifyStatus(getDb(env), "alice")).toBe("needs-reconnect");
   });
 
   it("asks for a reconnect without calling Spotify once the tokens were dropped", async () => {
@@ -183,7 +181,6 @@ describe("Spotify access token", () => {
     await expect(result).rejects.toThrow();
     await expect(result).rejects.not.toBeInstanceOf(SpotifyNeedsReconnect);
     expect(await storedConnection()).toEqual(before);
-    expect(await spotifyStatus(getDb(env), "alice")).toBe("connected");
   });
 
   it.each([

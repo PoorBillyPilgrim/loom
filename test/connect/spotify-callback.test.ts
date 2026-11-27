@@ -3,7 +3,6 @@ import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { decryptToken } from "@/auth/crypto";
 import { handleSpotifyCallback } from "@/connect/spotify-callback";
-import { spotifyStatus } from "@/connect/status";
 import { getDb } from "@/db/client";
 import { connections, sessions } from "@/db/schema";
 import {
@@ -384,15 +383,16 @@ describe("Connect Spotify callback", () => {
     await expect(
       spotifyAccessToken(getDb(env), env, id, LATER),
     ).rejects.toBeInstanceOf(SpotifyNeedsReconnect);
-    expect(await spotifyStatus(getDb(env), id)).toBe("needs-reconnect");
+    const [dropped] = await getDb(env).select().from(connections);
+    expect(dropped.refreshTokenEnc).toBeNull();
 
     network.resetHandlers();
     spotifyRespondsWith({ ...token, access_token: "reconnected-access" });
     await completeConnect(sessionCookie, LATER);
 
-    expect(await spotifyStatus(getDb(env), id)).toBe("connected");
     const rows = await getDb(env).select().from(connections);
     expect(rows).toHaveLength(1);
+    expect(rows[0].refreshTokenEnc).not.toBeNull();
     expect(rows[0].id).toBe(connected.id);
     expect(rows[0].refreshTokenIssuedAt).toEqual(LATER);
     expect(
