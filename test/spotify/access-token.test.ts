@@ -186,6 +186,52 @@ describe("Spotify access token", () => {
     expect(await spotifyStatus(getDb(env), "alice")).toBe("connected");
   });
 
+  it.each([
+    [503, "spotify_unavailable"],
+    [429, "spotify_rate_limited"],
+  ])(
+    "reports a %i from Spotify's token endpoint as %s",
+    async (status, code) => {
+      await insertSpotifyConnection("alice", {
+        accessTokenExpiresAt: new Date(NOW.getTime() - MINUTE_MS),
+      });
+      spotifyRefreshRespondsWith(() => new HttpResponse(null, { status }));
+
+      await expect(
+        spotifyAccessToken(getDb(env), env, "alice", NOW),
+      ).rejects.toMatchObject({ code });
+    },
+  );
+
+  it("reports a network failure while renewing as Spotify being unavailable", async () => {
+    await insertSpotifyConnection("alice", {
+      accessTokenExpiresAt: new Date(NOW.getTime() - MINUTE_MS),
+    });
+    const before = await storedConnection();
+    spotifyRefreshRespondsWith(() => HttpResponse.error());
+
+    await expect(
+      spotifyAccessToken(getDb(env), env, "alice", NOW),
+    ).rejects.toMatchObject({ code: "spotify_unavailable" });
+    expect(await storedConnection()).toEqual(before);
+  });
+
+  it("refreshes a still-valid token when forced to", async () => {
+    await insertSpotifyConnection("alice", {
+      accessTokenExpiresAt: new Date(NOW.getTime() + 30 * MINUTE_MS),
+    });
+    spotifyRefreshRespondsWith(() => refreshed());
+
+    const token = await spotifyAccessToken(getDb(env), env, "alice", NOW, {
+      forceRefresh: true,
+    });
+
+    expect(token).toBe("new-access");
+    expect(tokenRequests).toHaveLength(1);
+    const row = await storedConnection();
+    expect(await decrypt(row.accessTokenEnc)).toBe("new-access");
+  });
+
   it("reports a Listener who never connected Spotify", async () => {
     await expect(
       spotifyAccessToken(getDb(env), env, "alice", NOW),

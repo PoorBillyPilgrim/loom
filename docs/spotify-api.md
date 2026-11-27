@@ -17,6 +17,20 @@ The Web API (`https://api.spotify.com/v1/…`) returns errors with this body:
 
 `status` is 401, 403 or 429, and matches the HTTP status.
 
+A 429 from Spotify's dev-mode quota also carries a `reason`. Retrying doesn't help, so Loom shows it as a quota error and doesn't wait:
+
+```json
+{
+  "error": {
+    "status": 429,
+    "message": "Too many requests",
+    "reason": "QUOTA_EXCEEDED"
+  }
+}
+```
+
+Any other 429 is a short-term rate limit. Loom waits out a `Retry-After` of 3 seconds or less and retries once.
+
 The Accounts token endpoint (`https://accounts.spotify.com/api/token`) uses a different, flat OAuth shape instead, e.g. `{ "error": "invalid_grant", "error_description": "…" }`. See `src/spotify/access-token.ts`.
 
 ## Development Mode

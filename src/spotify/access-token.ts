@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { decryptToken, encryptToken } from "@/auth/crypto";
+import { LoomError } from "@/core/errors";
 import type { Db } from "@/db/client";
 import { connections } from "@/db/schema";
 
@@ -8,9 +9,17 @@ const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 const EXPIRY_MARGIN_MS = 60 * 1000;
 
 /** Spotify's 6-month authorization ran out; the Listener must reconnect */
-export class SpotifyNeedsReconnect extends Error {}
+export class SpotifyNeedsReconnect extends LoomError {
+  constructor() {
+    super("spotify_needs_reconnect");
+  }
+}
 
-export class SpotifyNotConnected extends Error {}
+export class SpotifyNotConnected extends LoomError {
+  constructor() {
+    super("spotify_not_connected");
+  }
+}
 
 type RefreshedTokens = {
   access_token: string;
@@ -23,6 +32,7 @@ export async function spotifyAccessToken(
   env: Env,
   listenerId: string,
   now: Date,
+  { forceRefresh = false }: { forceRefresh?: boolean } = {},
 ): Promise<string> {
   const key = env.TOKEN_ENCRYPTION_KEY;
   const spotifyConnection = and(
@@ -38,6 +48,7 @@ export async function spotifyAccessToken(
   if (!refreshTokenEnc) throw new SpotifyNeedsReconnect();
 
   if (
+    !forceRefresh &&
     accessTokenEnc &&
     accessTokenExpiresAt &&
     accessTokenExpiresAt.getTime() - EXPIRY_MARGIN_MS > now.getTime()
@@ -55,6 +66,8 @@ export async function spotifyAccessToken(
       grant_type: "refresh_token",
       refresh_token: await decryptToken(refreshTokenEnc, key),
     }),
+  }).catch(() => {
+    throw new LoomError("spotify_unavailable");
   });
 
   // Only invalid_grant means the authorization is gone. Other 400s are Loom's own config.
@@ -74,6 +87,8 @@ export async function spotifyAccessToken(
       throw new SpotifyNeedsReconnect();
     }
   }
+  if (response.status === 429) throw new LoomError("spotify_rate_limited");
+  if (response.status >= 500) throw new LoomError("spotify_unavailable");
   if (!response.ok) {
     throw new Error(`Spotify token refresh failed with ${response.status}`);
   }
