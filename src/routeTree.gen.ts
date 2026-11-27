@@ -16,6 +16,7 @@ import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthLogoutRouteImport } from './routes/auth/logout'
 import { Route as ConnectSpotifyIndexRouteImport } from './routes/connect/spotify/index'
 import { Route as ConnectSpotifyCallbackRouteImport } from './routes/connect/spotify/callback'
+import { Route as DevSpotifySplatRouteImport } from './routes/dev/spotify/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const ConnectSpotifyCallbackRoute = ConnectSpotifyCallbackRouteImport.update({
   path: '/connect/spotify/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevSpotifySplatRoute = DevSpotifySplatRouteImport.update({
+  id: '/dev/spotify/$',
+  path: '/dev/spotify/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/connect/spotify/callback': typeof ConnectSpotifyCallbackRoute
+  '/dev/spotify/$': typeof DevSpotifySplatRoute
   '/connect/spotify/': typeof ConnectSpotifyIndexRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/connect/spotify/callback': typeof ConnectSpotifyCallbackRoute
+  '/dev/spotify/$': typeof DevSpotifySplatRoute
   '/connect/spotify': typeof ConnectSpotifyIndexRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/logout': typeof AuthLogoutRoute
   '/connect/spotify/callback': typeof ConnectSpotifyCallbackRoute
+  '/dev/spotify/$': typeof DevSpotifySplatRoute
   '/connect/spotify/': typeof ConnectSpotifyIndexRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/connect/spotify/callback'
+    | '/dev/spotify/$'
     | '/connect/spotify/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/connect/spotify/callback'
+    | '/dev/spotify/$'
     | '/connect/spotify'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/logout'
     | '/connect/spotify/callback'
+    | '/dev/spotify/$'
     | '/connect/spotify/'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthLogoutRoute: typeof AuthLogoutRoute
   ConnectSpotifyCallbackRoute: typeof ConnectSpotifyCallbackRoute
+  DevSpotifySplatRoute: typeof DevSpotifySplatRoute
   ConnectSpotifyIndexRoute: typeof ConnectSpotifyIndexRoute
 }
 
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConnectSpotifyCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/spotify/$': {
+      id: '/dev/spotify/$'
+      path: '/dev/spotify/$'
+      fullPath: '/dev/spotify/$'
+      preLoaderRoute: typeof DevSpotifySplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthLogoutRoute: AuthLogoutRoute,
   ConnectSpotifyCallbackRoute: ConnectSpotifyCallbackRoute,
+  DevSpotifySplatRoute: DevSpotifySplatRoute,
   ConnectSpotifyIndexRoute: ConnectSpotifyIndexRoute,
 }
 export const routeTree = rootRouteImport

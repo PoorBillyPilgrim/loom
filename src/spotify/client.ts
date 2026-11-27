@@ -2,7 +2,7 @@ import { LoomError } from "@/core/errors";
 import type { Db } from "@/db/client";
 import { spotifyAccessToken } from "@/spotify/access-token";
 
-const API_URL = "https://api.spotify.com/v1";
+export const SPOTIFY_API_URL = "https://api.spotify.com/v1";
 // Longer waits would hold up the page the Listener is looking at
 const MAX_RETRY_AFTER_SECONDS = 3;
 
@@ -19,7 +19,7 @@ export async function spotifyGet<T>(
   path: string,
   params: Record<string, string> = {},
 ): Promise<T> {
-  const url = new URL(`${API_URL}${path}`);
+  const url = new URL(`${SPOTIFY_API_URL}${path}`);
   url.search = new URLSearchParams(params).toString();
   const accessToken = (forceRefresh = false) =>
     spotifyAccessToken(ctx.db, ctx.env, ctx.listenerId, ctx.now, {

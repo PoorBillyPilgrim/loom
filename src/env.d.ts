@@ -6,4 +6,6 @@ interface __BaseEnv_Env {
   SPOTIFY_CLIENT_SECRET: string;
   LASTFM_API_KEY: string;
   TOKEN_ENCRYPTION_KEY: string;
+  // Local only, never a Worker secret. "true" turns on /dev/spotify for re-recording test fixtures.
+  LOOM_RECORD_FIXTURES?: string;
 }

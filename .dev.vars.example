@@ -5,3 +5,5 @@ SPOTIFY_CLIENT_SECRET=
 LASTFM_API_KEY=
 # openssl rand -base64 32
 TOKEN_ENCRYPTION_KEY=
+# Local only. "true" turns on /dev/spotify/<path> for re-recording Spotify test fixtures
+LOOM_RECORD_FIXTURES=
