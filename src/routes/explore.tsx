@@ -15,6 +15,7 @@ import {
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { type } from "arktype";
+import type { ReactNode } from "react";
 import type { LoomErrorCode } from "@/core/errors";
 import type { Seed } from "@/core/seeds";
 import { seedCandidatesQuery } from "@/queries/seeds";
@@ -35,11 +36,39 @@ const SPOTIFY_MESSAGES: Record<string, { color: string; text: string }> = {
   failed: { color: "red", text: "Connecting Spotify failed. Try again." },
 };
 
-const SEED_ERRORS: Partial<Record<LoomErrorCode, string>> = {
-  spotify_quota_exceeded:
-    "Loom has used up its Spotify quota for now. Try again later.",
-  spotify_rate_limited: "Spotify is busy. Try again in a minute.",
-  spotify_unavailable: "Spotify isn't responding. Try again later.",
+const SEED_ERRORS: Record<LoomErrorCode, ReactNode> = {
+  not_signed_in: (
+    <Alert color="red">You've been signed out. Sign in again.</Alert>
+  ),
+  spotify_not_connected: (
+    <Button component="a" href="/connect/spotify" w="fit-content">
+      Connect Spotify
+    </Button>
+  ),
+  spotify_needs_reconnect: (
+    <Alert color="yellow">
+      <Stack gap="xs" align="flex-start">
+        <Text size="sm">
+          Spotify's access to your account ran out after 6 months. Reconnect to
+          keep using it.
+        </Text>
+        <Button component="a" href="/connect/spotify">
+          Reconnect Spotify
+        </Button>
+      </Stack>
+    </Alert>
+  ),
+  spotify_quota_exceeded: (
+    <Alert color="red">
+      Loom has used up its Spotify quota for now. Try again later.
+    </Alert>
+  ),
+  spotify_rate_limited: (
+    <Alert color="red">Spotify is busy. Try again in a minute.</Alert>
+  ),
+  spotify_unavailable: (
+    <Alert color="red">Spotify isn't responding. Try again later.</Alert>
+  ),
 };
 
 export const Route = createFileRoute("/explore")({
@@ -103,7 +132,7 @@ function Explore() {
             <SeedList seeds={result.value} q={q?.trim()} />
           </>
         ) : (
-          <SeedError error={result.error} />
+          SEED_ERRORS[result.error]
         )}
       </Stack>
     </Container>
@@ -172,32 +201,4 @@ function SeedList({ seeds, q }: { seeds: Seed[]; q?: string }) {
       </SimpleGrid>
     </Stack>
   );
-}
-
-function SeedError({ error }: { error: LoomErrorCode }) {
-  if (error === "spotify_not_connected") {
-    return (
-      <Button component="a" href="/connect/spotify" w="fit-content">
-        Connect Spotify
-      </Button>
-    );
-  }
-
-  if (error === "spotify_needs_reconnect") {
-    return (
-      <Alert color="yellow">
-        <Stack gap="xs" align="flex-start">
-          <Text size="sm">
-            Spotify's access to your account ran out after 6 months. Reconnect
-            to keep using it.
-          </Text>
-          <Button component="a" href="/connect/spotify">
-            Reconnect Spotify
-          </Button>
-        </Stack>
-      </Alert>
-    );
-  }
-
-  return <Alert color="red">{SEED_ERRORS[error]}</Alert>;
 }
