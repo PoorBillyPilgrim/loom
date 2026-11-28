@@ -7,3 +7,7 @@ Listeners sign in to Loom with Google (`openid email profile`, which are non-sen
 - **Sign in with any Connection** (Spotify, Last.fm or MusicBrainz). Rejected for now: four login flows, plus merging when one person signs in two ways, and invites would need links instead of an email list. We may revisit this and add other sign-in options later.
 - **MusicBrainz OAuth.** Rejected: it proves who someone is but can't write ListenBrainz playlists, because ListenBrainz only accepts personal user tokens. Listeners paste that token when they connect ListenBrainz.
 - **Spotify sign-in** (the original plan). Rejected because of the 5-user cap.
+
+## Consequences
+
+Last.fm was set aside as a Connection when its API went behind Last.fm Pro (0009). Connections are now Spotify and ListenBrainz. We may add Last.fm back later.

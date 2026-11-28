@@ -1,6 +1,6 @@
 # Loom
 
-Loom gathers music recommendations from several outside services into one place, where a Listener decides what to keep, then sends keepers to their streaming service and points to the artist on Bandcamp.
+Loom shows a Listener their listening habits and gathers music recommendations from outside services into one place, where they decide what to keep, then sends keepers to their streaming service and points to the artist on Bandcamp.
 
 ## People
 
@@ -13,7 +13,7 @@ An email address allowed to sign in to Loom. Only Invited people can become List
 _Avoid_: Allowlist, whitelist, signup
 
 **Connection**:
-An outside account a Listener links to Loom: Spotify, Last.fm, or ListenBrainz. Connections supply listening history, Known Items, or a Loom Playlist. None is used to sign in. At most five Listeners can connect Spotify.
+An outside account a Listener links to Loom: Spotify or ListenBrainz. Connections supply Listens, Known Items, or a Loom Playlist. None is used to sign in. At most five Listeners can connect Spotify.
 _Avoid_: Integration, login, linked account
 
 **Disconnect**:
@@ -24,6 +24,12 @@ _Avoid_: Unlink, remove, log out
 A Listener leaving Loom. Everything Loom holds about them is deleted immediately, with no grace period.
 _Avoid_: Deactivate, Disconnect, delete account
 
+## Listening
+
+**Listen**:
+One time a Listener played a Track, at a moment in time.
+_Avoid_: Scrobble, play, stream
+
 ## Recommendations
 
 **Recommendation**:
@@ -31,7 +37,7 @@ One Catalog Item suggested to a Listener, carrying one or more Reasons. The more
 _Avoid_: Suggestion, rec, pick
 
 **Reason**:
-One Source suggesting a Catalog Item because of one Seed, e.g. "Last.fm: similar to Big Thief".
+One Source suggesting a Catalog Item because of one Seed, e.g. "ListenBrainz: similar to Big Thief".
 _Avoid_: Match, hit, signal
 
 **Catalog Item**:
@@ -39,23 +45,23 @@ An Artist, Album, or Track listed in MusicBrainz. Playlists are never Catalog It
 _Avoid_: Entity, media, content
 
 **Source**:
-An outside service that produces Recommendations, e.g. Last.fm.
+An outside service that produces Recommendations, e.g. ListenBrainz, or MusicBrainz through relationships between artists.
 _Avoid_: Provider, feed, integration
 
 **Seed**:
-The Artist, Track, or Tag a Source starts from when suggesting something, e.g. Big Thief. An Album used as a Seed stands in for its Artist.
+The Artist, Track, or Genre a Source starts from when suggesting something, e.g. Big Thief. An Album used as a Seed stands in for its Artist.
 _Avoid_: Basis, input, origin
 
-**Tag**:
-A crowd-sourced genre or mood label from Last.fm, e.g. "shoegaze".
-_Avoid_: Genre, category, style
+**Genre**:
+A genre from MusicBrainz's curated genre list, e.g. "shoegaze". Free-form tags such as "seen live" are not Genres.
+_Avoid_: Tag, category, style
 
 **Exploration**:
 An on-demand request where the Listener picks a Seed and Loom asks the Sources for Recommendations right away.
 _Avoid_: Search, query
 
 **Digest**:
-A batch of up to about 30 new Recommendations built from the Listener's recent listening across all their Connections. It runs every Monday morning, and the Listener can also run one on demand. A Listener with no listening Connection gets no Digest.
+A batch of up to about 30 new Recommendations built from the Listener's recent Listens. It runs every Monday morning, and the Listener can also run one on demand. A Listener with no listening Connection gets no Digest.
 _Avoid_: Feed, weekly, report
 
 ## Triage
@@ -81,7 +87,7 @@ Setting a Recommendation aside until the next Digest.
 _Avoid_: Later, defer, remind
 
 **Known Item**:
-A Catalog Item the Listener already knows: one they've kept, played a few times on any Connection, or have on Spotify (a followed Artist, a saved Album, or a Track in Liked Songs or the Loom Playlist). Known Items never reach the Inbox.
+A Catalog Item the Listener already knows: one they've kept, have a few Listens of, or have on Spotify (a followed Artist, a saved Album, or a Track in Liked Songs or the Loom Playlist). Known Items never reach the Inbox.
 _Avoid_: Duplicate, owned
 
 **Not on Spotify**:
